@@ -11,7 +11,7 @@ import tacos.kitchen.KitchenUI;
 @Profile("rabbitmq-listener")
 @Component
 public class OrderListener {
-
+  
   private KitchenUI ui;
 
   @Autowired
@@ -23,5 +23,5 @@ public class OrderListener {
   public void receiveOrder(TacoOrder order) {
     ui.displayOrder(order);
   }
-
+  
 }
