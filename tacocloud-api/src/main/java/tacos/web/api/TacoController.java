@@ -1,7 +1,8 @@
 package tacos.web.api;
 
+import java.util.List;
 import java.util.Optional;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ import tacos.data.TacoRepository;
 @RestController
 @RequestMapping(path="/api/tacos",                      // <1>
                 produces="application/json")
-@CrossOrigin(origins="http://tacocloud:8080")        // <2>
+@CrossOrigin(origins="http://localhost:8080")        // <2>
 public class TacoController {
   private TacoRepository tacoRepo;
 
@@ -42,19 +43,12 @@ public class TacoController {
   }
 
   @GetMapping("/{id}")
-  public Optional<Taco> tacoById(@PathVariable("id") Long id) {
-    return tacoRepo.findById(id);
-  }
-
-  /*
-  @GetMapping("/{id}")
-  public ResponseEntity<Taco> tacoById(@PathVariable("id") Long id) {
+  public Taco tacoById(@PathVariable("id") Long id) {
     Optional<Taco> optTaco = tacoRepo.findById(id);
     if (optTaco.isPresent()) {
-      return new ResponseEntity<>(optTaco.get(), HttpStatus.OK);
+      return optTaco.get();
     }
-    return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    return null;
   }
-  */
 
 }

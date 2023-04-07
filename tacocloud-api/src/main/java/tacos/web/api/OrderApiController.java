@@ -16,17 +16,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import tacos.TacoOrder;
 import tacos.data.OrderRepository;
+import tacos.messaging.OrderMessagingService;
 
 @RestController
 @RequestMapping(path="/api/orders",
                 produces="application/json")
-@CrossOrigin(origins="http://tacocloud:8080")
+@CrossOrigin(origins="http://localhost:8080")
 public class OrderApiController {
 
   private OrderRepository repo;
+  private OrderMessagingService messageService;
 
-  public OrderApiController(OrderRepository repo) {
+  public OrderApiController(
+          OrderRepository repo,
+          OrderMessagingService messageService) {
     this.repo = repo;
+    this.messageService = messageService;
   }
 
   @GetMapping(produces="application/json")
@@ -37,6 +42,7 @@ public class OrderApiController {
   @PostMapping(consumes="application/json")
   @ResponseStatus(HttpStatus.CREATED)
   public TacoOrder postOrder(@RequestBody TacoOrder order) {
+    messageService.sendOrder(order);
     return repo.save(order);
   }
 
@@ -66,7 +72,7 @@ public class OrderApiController {
       order.setDeliveryState(patch.getDeliveryState());
     }
     if (patch.getDeliveryZip() != null) {
-      order.setDeliveryZip(patch.getDeliveryZip());
+      order.setDeliveryZip(patch.getDeliveryState());
     }
     if (patch.getCcNumber() != null) {
       order.setCcNumber(patch.getCcNumber());

@@ -8,8 +8,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.hateoas.MediaTypes;
-import org.springframework.hateoas.client.Traverson;
 import org.springframework.web.client.RestTemplate;
 
 import lombok.extern.slf4j.Slf4j;
@@ -100,53 +98,6 @@ public class RestExamples {
       tacoCloudClient.deleteIngredient(before);
       after = tacoCloudClient.getIngredientById("SHMP");
       log.info("AFTER:  " + after);
-    };
-  }
-
-  //
-  // Traverson examples
-  //
-
-  @Bean
-  public Traverson traverson() {
-    Traverson traverson = new Traverson(
-        URI.create("http://localhost:8080/api"), MediaTypes.HAL_JSON);
-    return traverson;
-  }
-
-  @Bean
-  public CommandLineRunner traversonGetIngredients(TacoCloudClient tacoCloudClient) {
-    return args -> {
-      Iterable<Ingredient> ingredients = tacoCloudClient.getAllIngredientsWithTraverson();
-      log.info("----------------------- GET INGREDIENTS WITH TRAVERSON -------------------------");
-      for (Ingredient ingredient : ingredients) {
-        log.info("   -  " + ingredient);
-      }
-    };
-  }
-
-  @Bean
-  public CommandLineRunner traversonSaveIngredient(TacoCloudClient tacoCloudClient) {
-    return args -> {
-      Ingredient pico = tacoCloudClient.addIngredient(
-          new Ingredient("PICO", "Pico de Gallo", Ingredient.Type.SAUCE));
-      List<Ingredient> allIngredients = tacoCloudClient.getAllIngredients();
-      log.info("----------------------- ALL INGREDIENTS AFTER SAVING PICO -------------------------");
-      for (Ingredient ingredient : allIngredients) {
-        log.info("   -  " + ingredient);
-      }
-      tacoCloudClient.deleteIngredient(pico);
-    };
-  }
-
-  @Bean
-  public CommandLineRunner traversonRecentTacos(TacoCloudClient tacoCloudClient) {
-    return args -> {
-      Iterable<Taco> recentTacos = tacoCloudClient.getRecentTacosWithTraverson();
-      log.info("----------------------- GET RECENT TACOS WITH TRAVERSON -------------------------");
-      for (Taco taco : recentTacos) {
-        log.info("   -  " + taco);
-      }
     };
   }
 
