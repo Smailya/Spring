@@ -16,7 +16,7 @@ import tacos.TacoOrder;
 public class OrderReceiverController {
 
   private final OrderReceiver orderReceiver;
-
+  
   @GetMapping("/receive")
   public String receiveOrder(Model model) {
     TacoOrder order = orderReceiver.receiveOrder();
@@ -26,6 +26,6 @@ public class OrderReceiverController {
     }
     return "noOrder";
   }
-
-
+  
+  
 }

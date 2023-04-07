@@ -3,16 +3,14 @@ package tacos.email;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import javax.mail.Message;
 import javax.mail.MessagingException;
 import javax.mail.internet.InternetAddress;
+
 import org.apache.commons.text.similarity.LevenshteinDistance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.integration.mail.transformer
-                                            .AbstractMailMessageTransformer;
-import org.springframework.integration.support
-                                            .AbstractIntegrationMessageBuilder;
+import org.springframework.integration.mail.transformer.AbstractMailMessageTransformer;
+import org.springframework.integration.support.AbstractIntegrationMessageBuilder;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
@@ -22,51 +20,45 @@ import org.springframework.stereotype.Component;
  *  <li> The email subject line *must* be "TACO ORDER" or else it will be ignored</li>
  *  <li> Each line of the email starts with the name of a taco design, followed by a colon,
  *    followed by one or more ingredient names in a comma-separated list.</li>
- *
+ *    
  * <p>The ingredient names are matched against a known set of ingredients using a LevenshteinDistance
  * algorithm. As an example "beef" will match "GROUND BEEF" and be mapped to "GRBF"; "corn" will
  * match "Corn Tortilla" and be mapped to "COTO".</p>
- *
+ * 
  * <p>An example email body might look like this:</p>
- *
+ * 
  * <code>
  * Corn Carnitas: corn, carnitas, lettuce, tomatoes, cheddar<br/>
  * Veggielicious: flour, tomatoes, lettuce, salsa
  * </code>
- *
+ * 
  * <p>This will result in an order with two tacos where the names are "Corn Carnitas" and "Veggielicious".
  * The ingredients will be {COTO, CARN, LETC, TMTO, CHED} and {FLTO,TMTO,LETC,SLSA}.</p>
  */
 @Component
 public class EmailToOrderTransformer
      extends AbstractMailMessageTransformer<EmailOrder> {
-
-  private static Logger log =
-		  LoggerFactory.getLogger(EmailToOrderTransformer.class);
-
+  
   private static final String SUBJECT_KEYWORDS = "TACO ORDER";
 
   @Override
-  protected AbstractIntegrationMessageBuilder<EmailOrder>
+  protected AbstractIntegrationMessageBuilder<EmailOrder> 
                 doTransform(Message mailMessage) throws Exception {
     EmailOrder tacoOrder = processPayload(mailMessage);
     return MessageBuilder.withPayload(tacoOrder);
   }
-
+  
   private EmailOrder processPayload(Message mailMessage) {
     try {
       String subject = mailMessage.getSubject();
       if (subject.toUpperCase().contains(SUBJECT_KEYWORDS)) {
-        String email =
+        String email = 
               ((InternetAddress) mailMessage.getFrom()[0]).getAddress();
         String content = mailMessage.getContent().toString();
         return parseEmailToOrder(email, content);
       }
     } catch (MessagingException e) {
-    	log.error("MessagingException: {}", e);
-    } catch (IOException e) {
-    	log.error("IOException: {}", e);
-    }
+    } catch (IOException e) {}
     return null;
   }
 
@@ -86,7 +78,7 @@ public class EmailToOrderTransformer
             ingredientCodes.add(code);
           }
         }
-
+        
         Taco taco = new Taco(tacoName);
         taco.setIngredients(ingredientCodes);
         order.addTaco(taco);
@@ -94,12 +86,11 @@ public class EmailToOrderTransformer
     }
     return order;
   }
-
+  
   private String lookupIngredientCode(String ingredientName) {
     for (Ingredient ingredient : ALL_INGREDIENTS) {
       String ucIngredientName = ingredientName.toUpperCase();
-      if (LevenshteinDistance.getDefaultInstance()
-                  .apply(ucIngredientName, ingredient.getName()) < 3 ||
+      if (LevenshteinDistance.getDefaultInstance().apply(ucIngredientName, ingredient.getName()) < 3 ||
           ucIngredientName.contains(ingredient.getName()) ||
           ingredient.getName().contains(ucIngredientName)) {
         return ingredient.getCode();
@@ -107,7 +98,7 @@ public class EmailToOrderTransformer
     }
     return null;
   }
-
+  
   private static Ingredient[] ALL_INGREDIENTS = new Ingredient[] {
       new Ingredient("FLTO", "FLOUR TORTILLA"),
       new Ingredient("COTO", "CORN TORTILLA"),
@@ -121,3 +112,4 @@ public class EmailToOrderTransformer
       new Ingredient("SRCR", "SOUR CREAM")
   };
 }
+  

@@ -12,8 +12,8 @@
 
 	<parent>
 		<groupId>sia</groupId>
-  	<artifactId>taco-cloud-parent</artifactId>
-		<version>0.0.9-SNAPSHOT</version>
+		<artifactId>taco-cloud-cassandra-parent</artifactId>
+		<version>0.0.12-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -31,12 +31,10 @@
 		</dependency>
 
 		<!-- Necessary Boot starters -->
-		<!-- tag::artemisDependency[] -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-artemis</artifactId>
 		</dependency>
-		<!-- end::artemisDependency[] -->
 
 		<!-- Lombok -->
 		<dependency>
