@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import tacos.TacoOrder;
 import tacos.data.OrderRepository;
 import tacos.messaging.OrderMessagingService;
@@ -25,70 +27,89 @@ import tacos.messaging.OrderMessagingService;
 public class OrderApiController {
 
   private OrderRepository repo;
-  private OrderMessagingService messageService;
+  private OrderMessagingService orderMessages;
+  private EmailOrderService emailOrderService;
 
-  public OrderApiController(
-          OrderRepository repo,
-          OrderMessagingService messageService) {
+  public OrderApiController(OrderRepository repo,
+                            OrderMessagingService orderMessages,
+                            EmailOrderService emailOrderService) {
     this.repo = repo;
-    this.messageService = messageService;
+    this.orderMessages = orderMessages;
+    this.emailOrderService = emailOrderService;
   }
 
   @GetMapping(produces="application/json")
-  public Iterable<TacoOrder> allOrders() {
+  public Flux<TacoOrder> allOrders() {
     return repo.findAll();
   }
 
+//  @PostMapping(consumes="application/json")
+//  @ResponseStatus(HttpStatus.CREATED)
+//  public Mono<Order> postOrder(@RequestBody Mono<Order> order) {
+//    order.subscribe(orderMessages::sendOrder); // TODO: not ideal...work into reactive flow below
+//    return order
+//        .flatMap(repo::save);
+//  }
+
   @PostMapping(consumes="application/json")
   @ResponseStatus(HttpStatus.CREATED)
-  public TacoOrder postOrder(@RequestBody TacoOrder order) {
-    messageService.sendOrder(order);
+  public Mono<TacoOrder> postOrder(@RequestBody TacoOrder order) {
+    orderMessages.sendOrder(order);
     return repo.save(order);
+  }
+
+  @PostMapping(path="fromEmail", consumes="application/json")
+  @ResponseStatus(HttpStatus.CREATED)
+  public Mono<TacoOrder> postOrderFromEmail(@RequestBody Mono<EmailOrder> emailOrder) {
+    Mono<TacoOrder> order = emailOrderService.convertEmailOrderToDomainOrder(emailOrder);
+    order.subscribe(orderMessages::sendOrder); // TODO: not ideal...work into reactive flow below
+    return order
+        .flatMap(repo::save);
   }
 
   @PutMapping(path="/{orderId}", consumes="application/json")
-  public TacoOrder putOrder(
-                        @PathVariable("orderId") Long orderId,
-                        @RequestBody TacoOrder order) {
-    order.setId(orderId);
-    return repo.save(order);
+  public Mono<TacoOrder> putOrder(@RequestBody Mono<TacoOrder> order) {
+    return order.flatMap(repo::save);
   }
 
   @PatchMapping(path="/{orderId}", consumes="application/json")
-  public TacoOrder patchOrder(@PathVariable("orderId") Long orderId,
+  public Mono<TacoOrder> patchOrder(@PathVariable("orderId") String orderId,
                           @RequestBody TacoOrder patch) {
 
-    TacoOrder order = repo.findById(orderId).get();
-    if (patch.getDeliveryName() != null) {
-      order.setDeliveryName(patch.getDeliveryName());
-    }
-    if (patch.getDeliveryStreet() != null) {
-      order.setDeliveryStreet(patch.getDeliveryStreet());
-    }
-    if (patch.getDeliveryCity() != null) {
-      order.setDeliveryCity(patch.getDeliveryCity());
-    }
-    if (patch.getDeliveryState() != null) {
-      order.setDeliveryState(patch.getDeliveryState());
-    }
-    if (patch.getDeliveryZip() != null) {
-      order.setDeliveryZip(patch.getDeliveryState());
-    }
-    if (patch.getCcNumber() != null) {
-      order.setCcNumber(patch.getCcNumber());
-    }
-    if (patch.getCcExpiration() != null) {
-      order.setCcExpiration(patch.getCcExpiration());
-    }
-    if (patch.getCcCVV() != null) {
-      order.setCcCVV(patch.getCcCVV());
-    }
-    return repo.save(order);
+    return repo.findById(orderId)
+        .map(order -> {
+          if (patch.getDeliveryName() != null) {
+            order.setDeliveryName(patch.getDeliveryName());
+          }
+          if (patch.getDeliveryStreet() != null) {
+            order.setDeliveryStreet(patch.getDeliveryStreet());
+          }
+          if (patch.getDeliveryCity() != null) {
+            order.setDeliveryCity(patch.getDeliveryCity());
+          }
+          if (patch.getDeliveryState() != null) {
+            order.setDeliveryState(patch.getDeliveryState());
+          }
+          if (patch.getDeliveryZip() != null) {
+            order.setDeliveryZip(patch.getDeliveryState());
+          }
+          if (patch.getCcNumber() != null) {
+            order.setCcNumber(patch.getCcNumber());
+          }
+          if (patch.getCcExpiration() != null) {
+            order.setCcExpiration(patch.getCcExpiration());
+          }
+          if (patch.getCcCVV() != null) {
+            order.setCcCVV(patch.getCcCVV());
+          }
+          return order;
+        })
+        .flatMap(repo::save);
   }
 
   @DeleteMapping("/{orderId}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void deleteOrder(@PathVariable("orderId") Long orderId) {
+  public void deleteOrder(@PathVariable("orderId") String orderId) {
     try {
       repo.deleteById(orderId);
     } catch (EmptyResultDataAccessException e) {}

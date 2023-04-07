@@ -4,11 +4,11 @@
           http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>tacocloud-api</artifactId>
+	<artifactId>tacocloud-data-mongodb</artifactId>
 	<packaging>jar</packaging>
 
-	<name>tacocloud-api</name>
-	<description>Taco Cloud API</description>
+	<name>tacocloud-data-mongodb</name>
+	<description>Taco Cloud Data-MongoDB</description>
 
 	<parent>
 		<groupId>sia</groupId>
@@ -26,48 +26,22 @@
 		<!-- TacoCloud dependencies -->
 		<dependency>
 			<groupId>sia</groupId>
-			<artifactId>tacocloud-data-mongodb</artifactId>
-			<version>${tacocloud.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>sia</groupId>
 			<artifactId>tacocloud-domain-mongodb</artifactId>
 			<version>${tacocloud.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>sia</groupId>
-			<artifactId>tacocloud-security</artifactId>
-			<version>${tacocloud.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>sia</groupId>
-			<artifactId>tacocloud-messaging-noop</artifactId>
-			<version>${tacocloud.version}</version>
-		</dependency>
-<!--  		<dependency>
-			<groupId>sia</groupId>
-			<artifactId>tacocloud-messaging-jms</artifactId>
-			<version>${tacocloud.version}</version>
-		</dependency> -->
- 		<!-- <dependency>
-			<groupId>sia</groupId>
-			<artifactId>tacocloud-messaging-rabbitmq</artifactId>
-			<version>${tacocloud.version}</version>
-		</dependency> -->
-<!--   		<dependency>
-			<groupId>sia</groupId>
-			<artifactId>tacocloud-messaging-kafka</artifactId>
-			<version>${tacocloud.version}</version>
-		</dependency> -->
 
 		<!-- Necessary Boot starters -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webflux</artifactId>
+			<artifactId>spring-boot-starter-data-mongodb-reactive</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-rest</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
 		<!-- Lombok -->
@@ -84,10 +58,10 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- <dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-artemis</artifactId>
-		</dependency> -->
+		<dependency>
+			<groupId>de.flapdoodle.embed</groupId>
+			<artifactId>de.flapdoodle.embed.mongo</artifactId>
+		</dependency>
 	</dependencies>
 
 </project>
